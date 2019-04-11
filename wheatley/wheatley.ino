@@ -1,19 +1,35 @@
 #include <Servo.h>
 
+//jump servo settings
 Servo jumpServo;
-int jumpPin = 3;
+const int jumpPin = 3;
 //bool jumpSig = false;
 
+//turn servo settings
 Servo turnServo;
-int turnPin = 5;
+const int turnPin = 5;
 //bool turnSig = false;
 int originPos = 90;
+unsigned long prevTurnTime = 0;
+const long idleTurnDelay = 11000;
 
+//button settings
 int buttonPin = 8;
 int distVal = analogRead(A0);
 
+//eye (blue LED) settings
 int eyePin = 13;
-//connect blue LED along with
+unsigned long prevBlinkTime = 0;
+const long idleBlinkDelay = 5000;
+
+//base state
+bool idle = false;
+
+//ultrasound distance sensor
+const int triggerPin = 10;
+const int echoPin = 9;
+long duration = 0;
+long distance = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -22,24 +38,63 @@ void setup() {
   turnServo.attach(turnPin);
 
   pinMode(buttonPin, INPUT);
-  pinMode(eyePin, OUTPUT); 
+  pinMode(eyePin, OUTPUT);
+
+  digitalWrite(eyePin, LOW);
+
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  jumpServo.write(0);
+  turnServo.write(originPos);
 }
 
 void loop() {
+  unsigned long currentTime = millis();
+
+  //sleeping state
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration / 29 / 2;
+
+  if (distance >= 2000){
+    //adjust for irregular jumping values
+  }
+  
+  if (distance <= 70) {
+    idle = true;
+  } else {
+    idle = false;
+  }
+
+
+  //idle state
+  if (idle) {
+    digitalWrite(eyePin, HIGH);
+    if (currentTime - prevBlinkTime >= idleBlinkDelay) {
+      prevBlinkTime = currentTime;
+      blinkEye(1, 0);
+    }
+
+    if (currentTime - prevTurnTime >= idleTurnDelay) {
+      prevTurnTime = currentTime;
+      turnHead(1, 150, 30);
+    }
+  }
 
   //jump when shocked
   if (digitalRead(buttonPin) == HIGH) {
-    headUp(60, 200); //adjust to ideal delay timing
+    idle = false;
+    headUp(120, 200); //adjust to ideal delay timing
+    blinkEye(3, 100);
+    idle = true;
   }
 
-  delay(200);
-  digitalWrite(eyePin, HIGH);
-  delay(1000);
-  digitalWrite(eyePin, LOW);
-  delay(1000);
-  Serial.println("Um");
-  
- 
 }
 
 void headUp(int Angle, int delayTime) {
@@ -58,4 +113,13 @@ void turnHead(int turnNum, int turnAngle1, int turnAngle2) {
     delay(delayTime);
   }
   turnServo.write(originPos);
+}
+
+void blinkEye(int blinkNum, int blinkDelay) {
+  for (int i = 0; i < blinkNum; i++) {
+    digitalWrite(eyePin, LOW);
+    delay(100);
+    digitalWrite(eyePin, HIGH);
+    delay(blinkDelay);
+  }
 }
