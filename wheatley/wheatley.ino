@@ -24,6 +24,7 @@ const long idleBlinkDelay = 5000;
 
 //base state
 bool idle = false;
+bool sleeping = true;
 
 //ultrasound distance sensor
 const int triggerPin = 10;
@@ -61,17 +62,19 @@ void loop() {
 
   duration = pulseIn(echoPin, HIGH);
   distance = duration / 29 / 2;
-
-  if (distance >= 2000){
-    //adjust for irregular jumping values
-  }
+  distance = constrain(distance, 0, 2000);
   
-  if (distance <= 70) {
+  if (distance <= 100 && sleeping) {
     idle = true;
+    sleeping = false;
   } else {
     idle = false;
   }
 
+
+  if (sleeping){
+        digitalWrite(eyePin, LOW);
+    }
 
   //idle state
   if (idle) {
@@ -90,9 +93,11 @@ void loop() {
   //jump when shocked
   if (digitalRead(buttonPin) == HIGH) {
     idle = false;
-    headUp(120, 200); //adjust to ideal delay timing
+    Serial.println("3");
+    headUp(30, 200); //adjust to ideal delay timing
     blinkEye(3, 100);
-    idle = true;
+    prevTurnTime = currentTime;
+    delay(1000);
   }
 
 }
