@@ -24,7 +24,10 @@ Minim minim;
 boolean print = true;
 String printresult;
 String response;
-AudioPlayer[][] playerArray = {{pain1, pain2, pain3, pain4, pain5}, {press1, press2,press3, press4, press5}, {dontpress1, dontpress2,dontpress3, dontpress4, dontpress5}};
+AudioPlayer[][] playerArray = {{pain1, pain2, pain3, pain4, pain5}, {press1, press2, press3, press4, press5}, {dontpress1, dontpress2, dontpress3, dontpress4, dontpress5}};
+
+boolean awake;
+int shockCount;
 
 void setup() {
   String portName = Serial.list()[3];
@@ -32,11 +35,11 @@ void setup() {
   minim = new Minim(this);
 
   audioPort.bufferUntil(10);
-  
+
   String[] loadArray = {"pain", "press", "dontpress"};
-  for (int i = 0; i< 3; i++){
-    for (int j = 1; j<6; j++){
-      playerArray[i][j] = minim.loadFile("audio/"+loadArray[i]+"/"+j+".wav");
+  for (int i = 0; i< 3; i++) {
+    for (int j = 0; j<5; j++) {
+      playerArray[i][j] = minim.loadFile("audio/"+loadArray[i]+"/"+(j+1)+".wav");
     }
   }
 
@@ -46,26 +49,53 @@ void setup() {
 void draw() {
   if (audioPort.available() > 0) {
     printresult = audioPort.readStringUntil('\n');
-    if (printresult != null){
+    if (printresult != null) {
       println(printresult.trim());
-      if (printresult.trim().equals("3")) {
-        int player = (int)random(1,6);
-        println("play");
-        playerArray[0][player].play();
-        delay(1000);
-        audioControl.rewind();
+
+      if (!awake && printresult.trim().equals("1")) {
+        awake = true;
       }
+
+      if (awake) { // play audio when awake
+        if (shockCount == 0){
+          int idleplayer = (int)random(0,4);         
+          playerArray[1][idleplayer].play();
+          delay(1000);
+          playerArray[1][idleplayer].rewind();
+        }
+        
+        else if (shockCount >=1 ){
+          int idleplayer = (int)random(0,4);         
+          playerArray[2][idleplayer].play();
+          delay(1000);
+          playerArray[2][idleplayer].rewind();
+        }
+        
+        if (printresult.trim().equals("3")) { // if signal is 'pain'
+          int player = (int)random(0, 4);
+          println("play");
+          playerArray[0][player].play();
+          delay(1000);
+          playerArray[0][player].rewind();
+        }
+      }
+      
+      if (awake && printresult.trim().equals("2")) {
+        //go back to sleep
+        awake = false;
+      }
+      
     }
   }
 }
 
-void mouseClicked() {
-  println("play");
-  audioControl.play();
-}
 
 void stop() {
-  audioControl.close();
+  for (int i = 0; i< 3; i++) {
+    for (int j = 0; j<5; j++) {
+      playerArray[i][j].close();
+    }
+  }
   minim.stop();
   super.stop();
 }
