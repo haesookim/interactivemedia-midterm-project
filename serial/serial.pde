@@ -57,17 +57,18 @@ void draw() {
       }
 
       if (awake) { // play audio when awake
+      
         if (shockCount == 0){
           int idleplayer = (int)random(0,4);         
           playerArray[1][idleplayer].play();
-          delay(1000);
+          delay(7000);
           playerArray[1][idleplayer].rewind();
         }
         
         else if (shockCount >=1 ){
           int idleplayer = (int)random(0,4);         
           playerArray[2][idleplayer].play();
-          delay(1000);
+          delay(7000);
           playerArray[2][idleplayer].rewind();
         }
         

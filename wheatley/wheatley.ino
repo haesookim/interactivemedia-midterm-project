@@ -67,8 +67,10 @@ void loop() {
   if (distance <= 100 && sleeping) {
     idle = true;
     sleeping = false;
+    Serial.println("1"); //wake up string
   } else {
     idle = false;
+    Serial.println("2"); //going back to sleep string
   }
 
 
@@ -88,6 +90,7 @@ void loop() {
       prevTurnTime = currentTime;
       turnHead(1, 150, 30);
     }
+// adjust shockcount in processing
   }
 
   //jump when shocked
