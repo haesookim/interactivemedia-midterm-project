@@ -23,8 +23,8 @@ unsigned long prevBlinkTime = 0;
 const long idleBlinkDelay = 5000;
 
 //base state
-bool idle = false;
-bool sleeping = true;
+bool idle = true;
+bool sleeping = false;
 
 //ultrasound distance sensor
 const int triggerPin = 10;
@@ -64,14 +64,14 @@ void loop() {
   distance = duration / 29 / 2;
   distance = constrain(distance, 0, 2000);
   
-  if (distance <= 100 && sleeping) {
-    idle = true;
-    sleeping = false;
-    Serial.println("1"); //wake up string
-  } else {
-    idle = false;
-    Serial.println("2"); //going back to sleep string
-  }
+//  if (distance <= 100 && sleeping) {
+//    idle = true;
+//    sleeping = false;
+//    //Serial.println("1"); //wake up string
+//  } else {
+//    idle = false;
+//    //Serial.println("2"); //going back to sleep string
+//  }
 
 
   if (sleeping){
@@ -80,6 +80,7 @@ void loop() {
 
   //idle state
   if (idle) {
+    Serial.println("1");
     digitalWrite(eyePin, HIGH);
     if (currentTime - prevBlinkTime >= idleBlinkDelay) {
       prevBlinkTime = currentTime;

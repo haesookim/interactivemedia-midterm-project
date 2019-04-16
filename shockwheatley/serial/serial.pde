@@ -26,8 +26,10 @@ String printresult;
 String response;
 AudioPlayer[][] playerArray = {{pain1, pain2, pain3, pain4, pain5}, {press1, press2, press3, press4, press5}, {dontpress1, dontpress2, dontpress3, dontpress4, dontpress5}};
 
-boolean awake;
 int shockCount;
+
+long prevTime = 0;
+long currentTime = millis();
 
 void setup() {
   String portName = Serial.list()[3];
@@ -50,46 +52,50 @@ void draw() {
   if (audioPort.available() > 0) {
     printresult = audioPort.readStringUntil('\n');
     if (printresult != null) {
-      println(printresult.trim());
+      String serialVal = printresult.trim();
+      println(serialVal);
 
-      if (!awake && printresult.trim().equals("1")) {
-        awake = true;
+      if (serialVal.equals("2")) {
+        shockCount = 0;
       }
 
-      if (awake) { // play audio when awake
-      
-        if (shockCount == 0){
-          int idleplayer = (int)random(0,4);         
+      if (serialVal.equals("3")) { // if signal is 'pain'
+        scream();
+      } else if (serialVal.equals("1")) { // if signal is 'talk'
+        if (shockCount == 0) {
+          int idleplayer = (int)random(0, 4);         
           playerArray[1][idleplayer].play();
-          delay(7000);
+          waitbreak(7000, serialVal);
           playerArray[1][idleplayer].rewind();
-        }
-        
-        else if (shockCount >=1 ){
-          int idleplayer = (int)random(0,4);         
+        } else if (shockCount >=1 ) {
+          int idleplayer = (int)random(0, 4);         
           playerArray[2][idleplayer].play();
-          delay(7000);
+          waitbreak(7000, serialVal);
           playerArray[2][idleplayer].rewind();
         }
-        
-        if (printresult.trim().equals("3")) { // if signal is 'pain'
-          int player = (int)random(0, 4);
-          println("play");
-          playerArray[0][player].play();
-          delay(1000);
-          playerArray[0][player].rewind();
-        }
       }
-      
-      if (awake && printresult.trim().equals("2")) {
-        //go back to sleep
-        awake = false;
-      }
-      
     }
   }
 }
 
+
+void scream() {
+  int player = (int)random(0, 4);
+  playerArray[0][player].play();
+  delay(1000);
+  playerArray[0][player].rewind();
+  shockCount += 1;
+}
+
+
+void dontpressbutton() {
+}
+
+void waitbreak(int time, String shock) {
+  while (currentTime - prevTime < time) {
+    if (shock.equals("3")) break;
+  }
+}
 
 void stop() {
   for (int i = 0; i< 3; i++) {
