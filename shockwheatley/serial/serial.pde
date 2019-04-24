@@ -44,6 +44,8 @@ void setup() {
       playerArray[i][j] = minim.loadFile("audio/"+loadArray[i]+"/"+(j+1)+".wav");
     }
   }
+  
+  shockCount = 0;
 
   size(200, 200);
 }
@@ -57,11 +59,12 @@ void draw() {
 
       if (serialVal.equals("2")) {
         shockCount = 0;
+        //maybe make him say goodbye or something?
       }
 
       if (serialVal.equals("3")) { // if signal is 'pain'
         scream();
-      } else if (serialVal.equals("1")) { // if signal is 'talk'
+      } else if (serialVal.equals("1")) { // if signal is 'idle'
         if (shockCount == 0) {
           int idleplayer = (int)random(0, 4);         
           playerArray[1][idleplayer].play();
