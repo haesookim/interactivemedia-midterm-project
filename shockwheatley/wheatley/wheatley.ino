@@ -25,10 +25,10 @@ const long idleBlinkDelay = 5000;
 
 //talking settings
 unsigned long talkTimer;
-const long talkDelay = 5000;
+const long talkDelay = 3000;
 
 //base state
-int wakeDist = 100;
+int wakeDist = 1000;
 bool idle = true;
 bool sleeping = false;
 
@@ -38,10 +38,10 @@ const int echoPin = 9;
 long duration = 0;
 
 //using the NewPing library
-NewPing sonar(10,9);
+NewPing sonar(10, 9);
 unsigned long pingTimer;
 long distance = 0;
-#define pingSpeed = 100
+const int pingSpeed = 100;
 
 void setup() {
   Serial.begin(9600);
@@ -51,13 +51,13 @@ void setup() {
   jumpServo.attach(jumpPin);
   turnServo.attach(turnPin);
 
-  pinMode(buttonPin, INPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
   pinMode(eyePin, OUTPUT);
 
   digitalWrite(eyePin, LOW);
 
   /*pinMode(triggerPin, OUTPUT);
-  pinMode(echoPin, INPUT);*/
+    pinMode(echoPin, INPUT);*/
   //don't need these two lines if I'm using the library
 
   jumpServo.write(0);
@@ -72,22 +72,22 @@ void loop() {
     distance = sonar.convert_cm(sonar.ping());
   }
 
-  if (distance < wakeDist && sleeping){
+  if (distance < wakeDist && sleeping) {
     sleeping = false;
     idle = true;
-  } else if(distance > wakeDist){
+  } else if (distance > wakeDist) {
     sleeping = true;
     idle = false;
-    Serial.println("2"); // reset the shock counter 
+    Serial.println("2"); // reset the shock counter
   }
 
-  if (sleeping){
-        digitalWrite(eyePin, LOW);
-    }
+  if (sleeping) {
+    digitalWrite(eyePin, LOW);
+  }
 
   //idle state
   if (idle) {
-    if (currentTime > talkTimer){
+    if (currentTime > talkTimer) {
       talkTimer += talkDelay;
       Serial.println("1"); // tell wheatley to ramble every 3 secs or so
     }
@@ -97,15 +97,15 @@ void loop() {
       blinkEye(1, 0);
     }
 
-    if (currentTime - prevTurnTime >= idleTurnDelay) {
-      prevTurnTime = currentTime;
-      turnHead(1, 150, 30);
-    }
-// adjust shockcount in processing
+    //    if (currentTime - prevTurnTime >= idleTurnDelay) {
+    //      prevTurnTime = currentTime;
+    //      turnHead(1, 150, 30);
+    //    }
+    // adjust shockcount in processing
   }
 
   //jump when shocked
-  if (digitalRead(buttonPin) == HIGH) {
+  if (digitalRead(buttonPin) == LOW && idle) {
     idle = false;
     Serial.println("3"); // tell wheatley to jump
     headUp(30, 200); //adjust to ideal delay timing
@@ -116,24 +116,24 @@ void loop() {
 
   //old echo related code
   //sleeping state
-//  digitalWrite(triggerPin, LOW);
-//  delayMicroseconds(2);
-//  digitalWrite(triggerPin, HIGH);
-//  delayMicroseconds(10);
-//  digitalWrite(triggerPin, LOW);
-//
-//  duration = pulseIn(echoPin, HIGH);
-//  distance = duration / 29 / 2;
-//  distance = constrain(distance, 0, 2000);
-//  
-//  if (distance <= 100 && sleeping) {
-//    idle = true;
-//    sleeping = false;
-//    //Serial.println("1"); //wake up string
-//  } else {
-//    idle = false;
-//    //Serial.println("2"); //going back to sleep string
-//  }
+  //  digitalWrite(triggerPin, LOW);
+  //  delayMicroseconds(2);
+  //  digitalWrite(triggerPin, HIGH);
+  //  delayMicroseconds(10);
+  //  digitalWrite(triggerPin, LOW);
+  //
+  //  duration = pulseIn(echoPin, HIGH);
+  //  distance = duration / 29 / 2;
+  //  distance = constrain(distance, 0, 2000);
+  //
+  //  if (distance <= 100 && sleeping) {
+  //    idle = true;
+  //    sleeping = false;
+  //    //Serial.println("1"); //wake up string
+  //  } else {
+  //    idle = false;
+  //    //Serial.println("2"); //going back to sleep string
+  //  }
 
 }
 

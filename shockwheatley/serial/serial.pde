@@ -52,6 +52,7 @@ void setup() {
 
 void draw() {
   if (audioPort.available() > 0) {
+    println("working?");
     printresult = audioPort.readStringUntil('\n');
     if (printresult != null) {
       String serialVal = printresult.trim();
@@ -64,11 +65,12 @@ void draw() {
 
       if (serialVal.equals("3")) { // if signal is 'pain'
         scream();
-      } else if (serialVal.equals("1")) { // if signal is 'idle'
+      }
+      if (serialVal.equals("1")) { // if signal is 'idle'
         if (shockCount == 0) {
           int idleplayer = (int)random(0, 4);         
           playerArray[1][idleplayer].play();
-          waitbreak(7000, serialVal);
+          waitbreak(3000, serialVal);
           playerArray[1][idleplayer].rewind();
         } else if (shockCount >=1 ) {
           int idleplayer = (int)random(0, 4);         
@@ -106,6 +108,7 @@ void stop() {
       playerArray[i][j].close();
     }
   }
+  println("is this the problem");
   minim.stop();
   super.stop();
 }
