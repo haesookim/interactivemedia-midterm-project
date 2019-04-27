@@ -52,7 +52,6 @@ void setup() {
 
 void draw() {
   if (audioPort.available() > 0) {
-    println("working?");
     printresult = audioPort.readStringUntil('\n');
     if (printresult != null) {
       String serialVal = printresult.trim();

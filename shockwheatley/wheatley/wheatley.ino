@@ -1,4 +1,4 @@
-#include <NewPing.h>
+//#include <NewPing.h>
 #include <Servo.h>
 
 //jump servo settings
@@ -38,7 +38,7 @@ const int echoPin = 9;
 long duration = 0;
 
 //using the NewPing library
-NewPing sonar(10, 9);
+//NewPing sonar(10, 9);
 unsigned long pingTimer;
 long distance = 0;
 const int pingSpeed = 100;
@@ -67,19 +67,19 @@ void setup() {
 void loop() {
   unsigned long currentTime = millis();
 
-  if (currentTime >= pingTimer) {
-    pingTimer += pingSpeed; // Make sensor 1 fire again 100ms later (pingSpeed)
-    distance = sonar.convert_cm(sonar.ping());
-  }
+//  if (currentTime >= pingTimer) {
+//    pingTimer += pingSpeed; // Make sensor 1 fire again 100ms later (pingSpeed)
+//    distance = sonar.convert_cm(sonar.ping());
+//  }
 
-  if (distance < wakeDist && sleeping) {
-    sleeping = false;
-    idle = true;
-  } else if (distance > wakeDist) {
-    sleeping = true;
-    idle = false;
-    Serial.println("2"); // reset the shock counter
-  }
+//  if (distance < wakeDist && sleeping) {
+//    sleeping = false;
+//    idle = true;
+//  } else if (distance > wakeDist) {
+//    sleeping = true;
+//    idle = false;
+//    Serial.println("2"); // reset the shock counter
+//  }
 
   if (sleeping) {
     digitalWrite(eyePin, LOW);
@@ -87,9 +87,9 @@ void loop() {
 
   //idle state
   if (idle) {
+          Serial.println("1");
     if (currentTime > talkTimer) {
-      talkTimer += talkDelay;
-      Serial.println("1"); // tell wheatley to ramble every 3 secs or so
+      talkTimer += talkDelay; // tell wheatley to ramble every 3 secs or so
     }
     digitalWrite(eyePin, HIGH);
     if (currentTime - prevBlinkTime >= idleBlinkDelay) {
@@ -105,13 +105,12 @@ void loop() {
   }
 
   //jump when shocked
-  if (digitalRead(buttonPin) == LOW && idle) {
+  if (digitalRead(buttonPin) == LOW) {
     idle = false;
     Serial.println("3"); // tell wheatley to jump
     headUp(30, 200); //adjust to ideal delay timing
     blinkEye(3, 100);
     prevTurnTime = currentTime;
-    idle = true;
   }
 
   //old echo related code
