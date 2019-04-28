@@ -13,8 +13,12 @@ unsigned long currentTime;
 
 const long blinkTime = 5000;
 unsigned long blinkTimer;
+
 bool blinking;
 unsigned long blinkingTimer;
+
+bool jumping;
+unsigned long jumpingTimer;
 
 bool idle;
 bool buttonPressed;
@@ -58,16 +62,35 @@ void loop() {
 }
 
 void jump(int Angle, int jumpDelay) {
-  jumpServo.write(Angle);
-  delay(jumpDelay);
-  jumpServo.write(0);
+  int jump = 0;
+  jumping = false;
+  while (jump < 2) {
+    if (currentTime >= jumpingTimer){
+       jumpingTimer = currentTime + jumpDelay;
+       jumping = !jumping;
+       jump++;
+    }
+    if (jumping){
+      jumpServo.write(0);
+    } else{
+      jumpServo.write(Angle);
+    }
+
 }
 
 void blinkEye(int times, int blinkDelay) {
-  for (int i = 0; i < blinkNum; i++) {
-    digitalWrite(eyePin, LOW);
-    delay(100);
-    digitalWrite(eyePin, HIGH);
-    delay(blinkDelay);
+  int blinknum = 0;
+  blinking = false;
+  while (blinknum < 2*times) {
+    if (currentTime >= blinkingTimer){
+       blinkingTimer = currentTime + blinkDelay;
+       blinking = !blinking;
+       blinknum++;
+    }
+    if (blinking){
+      digitalWrite(eyePin, HIGH);  
+    } else{
+      digitalWrite(eyePin, LOW);
+    }
   }
 }
