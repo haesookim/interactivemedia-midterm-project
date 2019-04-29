@@ -29,11 +29,15 @@ AudioPlayer[][] playerArray = {{pain1, pain2, pain3, pain4, pain5}, {press1, pre
 int shockCount;
 
 long prevTime = 0;
+long rewindTimer = 0;
+long rewindDelay = 5000;
 long currentTime = millis();
+
+boolean finished = true;
 
 void setup() {
   String portName = Serial.list()[3];
-  audioPort = new Serial (this, portName, 9600);
+  audioPort = new Serial (this, "/dev/cu.usbmodem14201", 9600);
   minim = new Minim(this);
 
   audioPort.bufferUntil(10);
@@ -44,14 +48,14 @@ void setup() {
       playerArray[i][j] = minim.loadFile("audio/"+loadArray[i]+"/"+(j+1)+".wav");
     }
   }
-  
-  shockCount = 0;
 
   size(200, 200);
 }
 
 void draw() {
-  if (audioPort.available() > 0) {
+  currentTime = millis();
+  if (audioPort.available() > 0 && finished) {
+    finished = false;
     printresult = audioPort.readStringUntil('\n');
     if (printresult != null) {
       String serialVal = printresult.trim();
@@ -59,25 +63,67 @@ void draw() {
 
       if (serialVal.equals("2")) {
         shockCount = 0;
-        //maybe make him say goodbye or something?
       }
 
       if (serialVal.equals("3")) { // if signal is 'pain'
         scream();
       }
-      if (serialVal.equals("1")) { // if signal is 'idle'
-        if (shockCount == 0) {
+      
+      if (serialVal.equals("1")) { // if signal is 'talk'
+        if (shockCount > 0) {
           int idleplayer = (int)random(0, 4);         
           playerArray[1][idleplayer].play();
-          waitbreak(3000, serialVal);
+          while (true) {
+            String tempVal;
+            if (audioPort.available() > 0) {
+              printresult = audioPort.readStringUntil('\n');
+              if (printresult != null) {
+                tempVal = printresult.trim();
+                if (tempVal.equals("3")) {
+                  playerArray[1][idleplayer].mute();
+                  playerArray[1][idleplayer].rewind();
+                  scream();
+                  rewindTimer = millis() + rewindDelay;
+                  break;
+                }
+              }
+            }
+            if (millis() > rewindTimer) {
+              rewindTimer = millis() + rewindDelay;
+              break;
+            }
+          }
+          playerArray[1][idleplayer].unmute();
           playerArray[1][idleplayer].rewind();
-        } else if (shockCount >=1 ) {
+        } else if (shockCount == 0) {
           int idleplayer = (int)random(0, 4);         
           playerArray[2][idleplayer].play();
-          waitbreak(7000, serialVal);
+          while (true) {
+            String tempVal;
+            if (audioPort.available() > 0) {
+              printresult = audioPort.readStringUntil('\n');
+              if (printresult != null) {
+                tempVal = printresult.trim();
+                if (tempVal.equals("3")) {
+                  playerArray[2][idleplayer].mute();
+                  playerArray[2][idleplayer].rewind();
+                  scream();
+                  rewindTimer = millis() + rewindDelay;
+                  break;
+                }
+              }
+            }
+            if (millis() > rewindTimer) {
+              rewindTimer = millis() + rewindDelay;
+              break;
+            }
+          }
+          playerArray[2][idleplayer].unmute();
           playerArray[2][idleplayer].rewind();
         }
       }
+      
+      finished = true;
     }
   }
 }
@@ -97,7 +143,11 @@ void dontpressbutton() {
 
 void waitbreak(int time, String shock) {
   while (currentTime - prevTime < time) {
-    if (shock.equals("3")) break;
+    prevTime = currentTime;
+    if (shock.equals("3")) {
+      break;
+    }
+    println("caught?");
   }
 }
 
@@ -107,7 +157,6 @@ void stop() {
       playerArray[i][j].close();
     }
   }
-  println("is this the problem");
   minim.stop();
   super.stop();
 }

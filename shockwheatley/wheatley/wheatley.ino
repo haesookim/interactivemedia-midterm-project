@@ -25,7 +25,7 @@ const long idleBlinkDelay = 5000;
 
 //talking settings
 unsigned long talkTimer;
-const long talkDelay = 3000;
+const long talkDelay = 7000;
 
 //base state
 int wakeDist = 1000;
@@ -67,19 +67,19 @@ void setup() {
 void loop() {
   unsigned long currentTime = millis();
 
-//  if (currentTime >= pingTimer) {
-//    pingTimer += pingSpeed; // Make sensor 1 fire again 100ms later (pingSpeed)
-//    distance = sonar.convert_cm(sonar.ping());
-//  }
+  //  if (currentTime >= pingTimer) {
+  //    pingTimer += pingSpeed; // Make sensor 1 fire again 100ms later (pingSpeed)
+  //    distance = sonar.convert_cm(sonar.ping());
+  //  }
 
-//  if (distance < wakeDist && sleeping) {
-//    sleeping = false;
-//    idle = true;
-//  } else if (distance > wakeDist) {
-//    sleeping = true;
-//    idle = false;
-//    Serial.println("2"); // reset the shock counter
-//  }
+  //  if (distance < wakeDist && sleeping) {
+  //    sleeping = false;
+  //    idle = true;
+  //  } else if (distance > wakeDist) {
+  //    sleeping = true;
+  //    idle = false;
+  //    Serial.println("2"); // reset the shock counter
+  //  }
 
   if (sleeping) {
     digitalWrite(eyePin, LOW);
@@ -87,53 +87,26 @@ void loop() {
 
   //idle state
   if (idle) {
-          Serial.println("1");
     if (currentTime > talkTimer) {
       talkTimer += talkDelay; // tell wheatley to ramble every 3 secs or so
+      Serial.write("1\n");
+      headUp(10, 500);
     }
     digitalWrite(eyePin, HIGH);
     if (currentTime - prevBlinkTime >= idleBlinkDelay) {
       prevBlinkTime = currentTime;
       blinkEye(1, 0);
     }
-
-    //    if (currentTime - prevTurnTime >= idleTurnDelay) {
-    //      prevTurnTime = currentTime;
-    //      turnHead(1, 150, 30);
-    //    }
-    // adjust shockcount in processing
   }
 
   //jump when shocked
   if (digitalRead(buttonPin) == LOW) {
     idle = false;
-    Serial.println("3"); // tell wheatley to jump
-    headUp(30, 200); //adjust to ideal delay timing
+    Serial.write("3\n"); // tell wheatley to jump
+    headUp(50, 100); //adjust to ideal delay timing
     blinkEye(3, 100);
-    prevTurnTime = currentTime;
+    idle = true;
   }
-
-  //old echo related code
-  //sleeping state
-  //  digitalWrite(triggerPin, LOW);
-  //  delayMicroseconds(2);
-  //  digitalWrite(triggerPin, HIGH);
-  //  delayMicroseconds(10);
-  //  digitalWrite(triggerPin, LOW);
-  //
-  //  duration = pulseIn(echoPin, HIGH);
-  //  distance = duration / 29 / 2;
-  //  distance = constrain(distance, 0, 2000);
-  //
-  //  if (distance <= 100 && sleeping) {
-  //    idle = true;
-  //    sleeping = false;
-  //    //Serial.println("1"); //wake up string
-  //  } else {
-  //    idle = false;
-  //    //Serial.println("2"); //going back to sleep string
-  //  }
-
 }
 
 void headUp(int Angle, int delayTime) {
