@@ -36,7 +36,6 @@ long currentTime = millis();
 boolean finished = true;
 
 void setup() {
-  String portName = Serial.list()[3];
   audioPort = new Serial (this, "/dev/cu.usbmodem14201", 9600);
   minim = new Minim(this);
 
@@ -149,6 +148,10 @@ void waitbreak(int time, String shock) {
     }
     println("caught?");
   }
+}
+
+void mouseClicked(){
+  shockCount = 0;
 }
 
 void stop() {
